@@ -1,0 +1,11 @@
+/server/venv/*
+/server/.venv/*
+/server/myenv
+/server/.env
+.env
+__pycache__/
+*.pyc
+/chromadb
+/source_documents
+temp_uploads/
+temp_files/

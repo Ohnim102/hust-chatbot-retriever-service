@@ -1,0 +1,29 @@
+services:      
+  # Ollama
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - hust-network
+
+  chromadb:
+    image: chromadb/chroma:1.0.14.dev78
+    volumes:
+      - ./chromadb:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma # this is the default path, change it as needed
+      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-TRUE}
+    ports:
+      - 8000:8000
+networks:
+  hust-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  ollama_data:
