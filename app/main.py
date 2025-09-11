@@ -7,21 +7,6 @@ from app.setting.config import get_settings
 
 app = FastAPI()
 
-# API GET
-@app.get("/")
-def read_root():
-    return {"message": "Hello API with FastAPI"}
-
-# API GET với tham số
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "query": q}
-
-# API POST
-@app.post("/items/")
-def create_item(item: dict):
-    return {"status": "created", "item": item}
-
 app.include_router(rag_router, prefix="/api")
 app.include_router(ollama_router, prefix="/api")
 

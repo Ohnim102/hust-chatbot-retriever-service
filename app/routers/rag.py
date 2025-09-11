@@ -5,7 +5,7 @@ from fastapi.params import Depends
 from app.service.rag_service import RAGService, get_rag_service
 from app.setting.enum import DocsCollection
 
-router = APIRouter(prefix="/rag", tags=["loag"])
+router = APIRouter(prefix="/rag", tags=["rag"])
 
 @router.post("/upload-for-search")
 async def load_document(
@@ -24,7 +24,6 @@ async def load_document(
         DocsCollection.SEARCH,
     )
     return documents
-
 
 @router.post("/upload-for-rag")
 async def load_document(
@@ -57,6 +56,15 @@ async def query_document(
     rag_service: RAGService = Depends(get_rag_service),
 ):
     return await rag_service.query_document(collection, query, k)
+
+
+@router.get("/generate-prompt")
+async def query_document(
+    query: str,
+    collection: DocsCollection = DocsCollection.SEARCH,
+    rag_service: RAGService = Depends(get_rag_service),
+):
+    return await rag_service.generate_prompt(query, collection)
 
 
 @router.get("/clear-vectordb")

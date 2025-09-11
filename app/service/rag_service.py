@@ -14,7 +14,6 @@ from langchain_text_splitters import (
 )
 from app.database.config import async_session
 from app.schemas.document import Document
-from app.crud.dependencies import get_db
 from app.rag.chromadb import ChromaDB
 # from app.rag.Qdrant import QdrantDB
 import re
@@ -26,8 +25,8 @@ from app.dtos.prompt import OllamaPrompt, OllamaMessage
 
 
 class RAGService:
-    def __init__(self, db: async_session):
-        self.db = db
+    def __init__(self):
+        self.chatid = 1;
 
     def clean_text(self, text: str) -> str:
         return text.strip()
@@ -191,7 +190,10 @@ class RAGService:
         texts = text_splitter.split_documents(documents)
         return texts
 
-    async def generate_prompt(self, query: str) -> List[Dict[str, str]]:
+    async def generate_prompt(self, 
+                              query: str, 
+                              collection: DocsCollection = DocsCollection.SEARCH
+                              ) -> List[Dict[str, str]]:
         """
         Generate a prompt for the RAG model using the query and context documents.
 
@@ -202,8 +204,8 @@ class RAGService:
             OllamaPrompt: The generated prompt.
         """
         # Lấy ngữ cảnh từ cơ sở dữ liệu Vector DB
-        context_documents = await self.query_rag_content_document(
-            DocsCollection.RAG, query, k=5
+        context_documents = await self.query_document(
+            collection, query, k=5
         )
 
         # Nếu không có tài liệu ngữ cảnh, trả về thông báo không có thông tin
@@ -226,5 +228,5 @@ class RAGService:
         return prompt_messages
 
 
-def get_rag_service(db: async_session = Depends(get_db)) -> RAGService:
-    return RAGService(db)
+def get_rag_service() -> RAGService:
+    return RAGService()

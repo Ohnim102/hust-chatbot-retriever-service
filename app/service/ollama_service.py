@@ -21,14 +21,10 @@ class OllamaService:
     def __init__(
         self,
         settings=Depends(get_settings),
-        chat_service: ChatService = Depends(get_chat_service),
-        message_service: MessageService = Depends(get_message_service),
         rag_service: RAGService = Depends(get_rag_service),
     ):
         self.base_url = settings.ollama_url
         self.timeout = settings.ollama_timeout
-        self.chat_service = chat_service
-        self.message_service = message_service
         self.rag_service = rag_service
 
     def count_tokens(self, text: str) -> int:
@@ -51,25 +47,6 @@ class OllamaService:
             print(f"[ERROR] Không thể kiểm tra model '{model_name}': {str(e)}")
             # Trả về False để an toàn
             return False
-
-    async def _get_or_create_chat(
-        self, chat_id: Optional[int], text: str, model_name: str
-    ) -> (ChatModels, List[MessageModels], int):
-        """
-        Helper function to either fetch an existing chat or create a new one.
-        """
-        if chat_id:
-            # Fetch chat and messages concurrently
-            chat_future = self.chat_service.get_by_id(int(chat_id))
-            messages_future = self.message_service.get_messages_by_chat_id(chat_id)
-            chat, messages = await asyncio.gather(chat_future, messages_future)
-            return chat, messages, chat_id
-        else:
-            # Create new chat and return
-            title = text[:30] + ("..." if len(text) > 30 else "")
-            chat = ChatModels(title=title, model=model_name)
-            chat = await self.chat_service.insert(chat)
-            return chat, [], chat.inserted_primary_key[0]
 
     def combine_message_content(self, messages: List[Dict[str, str]]) -> str:
         """
@@ -107,6 +84,7 @@ class OllamaService:
         """
         ollama_url = f"{self.base_url}/api/chat"
         model_to_use = request.model
+        chat_id = 1;
 
         # Kiểm tra sự tồn tại của model
         if not await self.check_model_exists(model_to_use):
@@ -118,23 +96,7 @@ class OllamaService:
         # text = self.combine_message_content(request.messages)
         query = self.get_current_query(request.messages)
 
-        chat, messages, chat_id = await self._get_or_create_chat(
-            request.chat_id, query, model_to_use
-        )
-
-        prompt = await self.rag_service.generate_prompt(query)
-
-        # Create user message and save to DB concurrently
-        user_message = MessageModels(
-            chat_id=chat_id,
-            role="user",
-            content=query,
-            tokens=self.count_tokens(query),
-            model=request.model,
-        )
-
-        # Save new message to database
-        await self.message_service.add_message(chat_id, user_message)
+        prompt = await self.rag_service.generate_prompt(query, DocsCollection.RAG)
 
         # load new message to context
         # for msg in messages:
@@ -212,8 +174,6 @@ class OllamaService:
 
 def get_ollama_service(
     settings=Depends(get_settings),
-    chat_service=Depends(get_chat_service),
-    message_service=Depends(get_message_service),
     rag_service=Depends(get_rag_service),
 ) -> OllamaService:
-    return OllamaService(settings, chat_service, message_service, rag_service)
+    return OllamaService(settings, rag_service)
