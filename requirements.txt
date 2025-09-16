@@ -5,3 +5,5 @@ langchain_chroma
 langchain_community
 pypdf==5.8.0
 docx2txt==0.9
+langchain-qdrant
+qdrant-client

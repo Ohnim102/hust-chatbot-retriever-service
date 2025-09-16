@@ -6,6 +6,7 @@
 __pycache__/
 *.pyc
 /chromadb
+/qdrantdb
 /source_documents
 temp_uploads/
 temp_files/

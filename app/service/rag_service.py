@@ -14,8 +14,8 @@ from langchain_text_splitters import (
 )
 from app.database.config import async_session
 from app.schemas.document import Document
-from app.rag.chromadb import ChromaDB
-# from app.rag.Qdrant import QdrantDB
+# from app.rag.chromadb import ChromaDB
+from app.rag.qdrantdb import QdrantDB
 import re
 import unicodedata
 from app.transformers.rag_file_transformer import transform_documents
@@ -147,30 +147,30 @@ class RAGService:
     async def query_document(
         self, collection_name: DocsCollection, query: str, k: int = 5
     ):
-        chromadb_instance = ChromaDB(collection_name=collection_name)
-        documents = chromadb_instance.query(query, k)
+        vectordb_instance = QdrantDB(collection_name=collection_name)
+        documents = vectordb_instance.query(query, k)
 
         return transform_documents(documents)
 
     async def query_rag_content_document(
         self, collection_name: DocsCollection, query: str, k: int = 5
     ):
-        chromadb_instance = ChromaDB(collection_name=collection_name)
-        documents = chromadb_instance.query(query, k)
+        vectordb_instance = QdrantDB(collection_name=collection_name)
+        documents = vectordb_instance.query(query, k)
 
         return transform_to_content(documents)
 
     async def add_to_vector_db(
         self, documents: List[Document], collection_name: DocsCollection
     ) -> List[Document]:
-        chromadb_instance = ChromaDB(collection_name=collection_name)
-        await chromadb_instance.add_documents(documents)
+        vectordb_instance = QdrantDB(collection_name=collection_name)
+        await vectordb_instance.add_documents(documents)
 
         return True
 
     async def clear_vectordb(self, collection_name: DocsCollection) -> bool:
-        chromadb_instance = ChromaDB(collection_name=collection_name)
-        return chromadb_instance.delete_collection()
+        vectordb_instance = QdrantDB(collection_name=collection_name)
+        return vectordb_instance.delete_collection()
 
     def split_documents(
         self,

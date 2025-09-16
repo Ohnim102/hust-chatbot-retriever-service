@@ -12,6 +12,7 @@ class Settings():
     version: str = "1.0.0"
     database_url: str = "postgresql+asyncpg://postgres:1234567890@localhost:5432/postgres"
     ollama_url: str = "http://localhost:11434"
+    qdrant_url: str = "http://localhost:6333"
     # ollama_url: str = "http://ollama:11434"
     ollama_timeout: int = 600
     chromadb_persist_directory: str = "chroma_db"
