@@ -168,6 +168,15 @@ class RAGService:
 
         return True
 
+    async def delete_documents_by_doc_id(
+            self, doc_id: str, collection_name: DocsCollection
+    ):
+        vectordb_instance = QdrantDB(collection_name=collection_name)
+        vectordb_instance.delete_documents_by_doc_id(doc_id)
+
+        return True
+        
+
     async def clear_vectordb(self, collection_name: DocsCollection) -> bool:
         vectordb_instance = QdrantDB(collection_name=collection_name)
         return vectordb_instance.delete_collection()

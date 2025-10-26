@@ -47,6 +47,20 @@ async def load_document(
     )
     return documents
 
+@router.delete("/delete-document-by-doc-id/{doc_id}")
+async def delete_documents_by_doc_id(
+    doc_id: str,
+    collection: DocsCollection = DocsCollection.RAG,
+    rag_service: RAGService = Depends(get_rag_service),
+):
+    """
+    Delete documents by document id.
+
+    Use the path parameter `doc_id` to specify which document to delete.
+    The `collection` may be passed as a query parameter (defaults to SEARCH).
+    """
+    result = await rag_service.delete_documents_by_doc_id(doc_id, collection)
+    return {"success": bool(result), "doc_id": doc_id}
 
 @router.get("/query")
 async def query_document(

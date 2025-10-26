@@ -9,6 +9,7 @@ from app.schemas.document import Document
 from app.setting.config import get_settings
 from uuid import uuid4
 from app.setting.enum import DocsCollection
+from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 
 
 class QdrantDB:
@@ -72,8 +73,19 @@ class QdrantDB:
             print(f"Error creating collection: {e}")
 
     async def add_documents(self, documents, metadatas=None):
+        # uuids = [str(uuid4()) for _ in range(len(documents))]
+        # await self.qdrantdb.aadd_documents(documents=documents, ids=uuids)
+        
         uuids = [str(uuid4()) for _ in range(len(documents))]
-        await self.qdrantdb.aadd_documents(documents=documents, ids=uuids)
+        docs_with_ids = []
+
+        for doc in documents:
+            # Gắn ID vào metadata (nếu chưa có)
+            if "doc_id" not in doc.metadata:
+                doc.metadata["doc_id"] = str(uuid4())
+            docs_with_ids.append(doc)
+
+        await self.qdrantdb.aadd_documents(documents=docs_with_ids, ids=uuids)
 
     # Query QdrantDB
     def query(self, query: str, top_k: int):
@@ -146,6 +158,23 @@ class QdrantDB:
             return True
         except Exception as e:
             print(f"Error deleting documents: {e}")
+            return False
+        
+    def delete_documents_by_doc_id(self, doc_id: str):
+        try:
+            qfilter = Filter(
+                must=[FieldCondition(key="metadata.doc_id", match=MatchValue(value=doc_id))]
+            )
+            # self.qdrantdb.delete(filter=qfilter)
+
+            self.qdrantdb.client.delete(
+                collection_name=self.qdrantdb.collection_name,
+                points_selector=qfilter
+            )
+            
+            return True
+        except Exception as e:
+            print(f"Error deleting documents by doc_id: {e}")
             return False
 
     def get_collection_info(self):
