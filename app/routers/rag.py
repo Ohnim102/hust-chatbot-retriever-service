@@ -7,27 +7,10 @@ from app.setting.enum import DocsCollection
 
 router = APIRouter(prefix="/rag", tags=["rag"])
 
-@router.post("/upload-for-search")
-async def load_document(
-    file: Annotated[UploadFile, File()],
-    rag_service: RAGService = Depends(get_rag_service),
-):
-    upload_directory = "./temp_uploads"
-    os.makedirs(upload_directory, exist_ok=True)
-
-    file_path = os.path.join(upload_directory, file.filename)
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
-
-    documents = await rag_service.load_and_split_document(
-        file_path,
-        DocsCollection.SEARCH,
-    )
-    return documents
-
 @router.post("/upload-for-rag")
 async def load_document(
     file: Annotated[UploadFile, File()],
+    collection: DocsCollection = DocsCollection.RAG,
     rag_service: RAGService = Depends(get_rag_service),
 ):
     upload_directory = "./temp_uploads"
@@ -39,7 +22,7 @@ async def load_document(
 
     documents = await rag_service.load_and_split_document(
         file_path,
-        DocsCollection.RAG,
+        collection,
         {
             "chunk_size": 2000,
             "chunk_overlap": 150,

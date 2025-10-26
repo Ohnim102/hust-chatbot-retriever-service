@@ -5,7 +5,7 @@ from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
-from app.schemas.document import Document
+from app.models.document import Document
 from app.setting.config import get_settings
 from uuid import uuid4
 from app.setting.enum import DocsCollection
@@ -72,8 +72,15 @@ class QdrantDB:
             print(f"Error creating collection: {e}")
 
     async def add_documents(self, documents, metadatas=None):
+        # Ensure we pass per-document metadatas so payload (including document_id)
+        # is stored in Qdrant and can be used for filtering/deletion later.
         uuids = [str(uuid4()) for _ in range(len(documents))]
-        await self.qdrantdb.aadd_documents(documents=documents, ids=uuids)
+        metadatas = metadatas or [
+            (doc.metadata if hasattr(doc, "metadata") and doc.metadata is not None else {})
+            for doc in documents
+        ]
+        # aadd_documents supports metadatas and ids
+        await self.qdrantdb.aadd_documents(documents=documents, metadatas=metadatas, ids=uuids)
 
     # Query QdrantDB
     def query(self, query: str, top_k: int):
@@ -146,6 +153,30 @@ class QdrantDB:
             return True
         except Exception as e:
             print(f"Error deleting documents: {e}")
+            return False
+
+    def delete_documents_by_document_id(self, document_id: str):
+        """Delete all points whose payload.metadata.document_id == document_id."""
+        try:
+            from qdrant_client.http.models import Filter, FieldCondition, MatchValue
+
+            filter_conditions = [
+                FieldCondition(
+                    key="document_id",
+                    match=MatchValue(value=document_id),
+                )
+            ]
+
+            qdrant_filter = Filter(must=filter_conditions)
+
+            # QdrantClient.delete supports deleting by a payload filter.
+            # Use the client directly so we can delete all points matching the document_id.
+            # Depending on qdrant-client version the parameter name may vary; most recent
+            # versions accept `filter` as shown below.
+            self.client.delete(collection_name=self.collection_name, filter=qdrant_filter)
+            return True
+        except Exception as e:
+            print(f"Error deleting documents by document_id: {e}")
             return False
 
     def get_collection_info(self):

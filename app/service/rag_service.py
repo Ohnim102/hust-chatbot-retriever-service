@@ -12,8 +12,7 @@ from langchain_text_splitters import (
     CharacterTextSplitter,
     RecursiveCharacterTextSplitter,
 )
-from app.database.config import async_session
-from app.schemas.document import Document
+from app.models.document import Document
 # from app.rag.chromadb import ChromaDB
 from app.rag.qdrantdb import QdrantDB
 import re
@@ -21,7 +20,7 @@ import unicodedata
 from app.transformers.rag_file_transformer import transform_documents
 from app.transformers.rag_content_transformer import transform_to_content
 from app.setting.enum import DocsCollection
-from app.dtos.prompt import OllamaPrompt, OllamaMessage
+from app.models.prompt import OllamaPrompt, OllamaMessage
 
 
 class RAGService:

@@ -1,3 +1,6 @@
 {
-    
+    "python.languageServer": "Default",
+    "pylance.enabled": false,
+    "pylance.disableLanguageServices": true,
+    "python.analysis.typeCheckingMode": "off"
 }
