@@ -5,7 +5,13 @@ from fastapi import Depends, HTTPException
 from typing import List, AsyncGenerator, Optional, Dict, Any
 from datetime import datetime
 import os
+
+from app.models.chat import ChatModels
+from app.models.chat import MessageModels
 from app.models.ollama import OllamaRequest
+from app.service.chat_service import ChatService, get_chat_service
+# from app.service.message_service import MessageService, get_message_service
+from app.service.message_service import MessageService, get_message_service
 from app.service.rag_service import RAGService, get_rag_service
 from app.setting.config import settings, get_settings
 from app.setting.enum import DocsCollection
