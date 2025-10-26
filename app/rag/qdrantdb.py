@@ -5,7 +5,7 @@ from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
-from app.schemas.document import Document
+from app.models.document import Document
 from app.setting.config import get_settings
 from uuid import uuid4
 from app.setting.enum import DocsCollection
