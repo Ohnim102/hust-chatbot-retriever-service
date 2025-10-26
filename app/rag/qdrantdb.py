@@ -72,7 +72,7 @@ class QdrantDB:
         except Exception as e:
             print(f"Error creating collection: {e}")
 
-    async def add_documents(self, documents, metadatas=None):
+    async def add_documents(self, doc_id, documents, metadatas=None):
         # uuids = [str(uuid4()) for _ in range(len(documents))]
         # await self.qdrantdb.aadd_documents(documents=documents, ids=uuids)
         
@@ -82,7 +82,7 @@ class QdrantDB:
         for doc in documents:
             # Gắn ID vào metadata (nếu chưa có)
             if "doc_id" not in doc.metadata:
-                doc.metadata["doc_id"] = str(uuid4())
+                doc.metadata["doc_id"] = doc_id # str(uuid4())
             docs_with_ids.append(doc)
 
         await self.qdrantdb.aadd_documents(documents=docs_with_ids, ids=uuids)
@@ -171,7 +171,7 @@ class QdrantDB:
                 collection_name=self.qdrantdb.collection_name,
                 points_selector=qfilter
             )
-            
+
             return True
         except Exception as e:
             print(f"Error deleting documents by doc_id: {e}")

@@ -108,6 +108,7 @@ class RAGService:
     # Load and split document
     async def load_and_split_document(
         self,
+        doc_id: str,
         file_path: str,
         collection_name: DocsCollection,
         options: Dict[str, any] = {
@@ -139,7 +140,7 @@ class RAGService:
 
         documents_add_page_name = self.add_file_name_to_start(metadata, documents)
         documents_cleaned = await self.clean_documents(documents_add_page_name)
-        await self.add_to_vector_db(documents_cleaned, collection_name)
+        await self.add_to_vector_db(doc_id, documents_cleaned, collection_name)
 
         return file_path
 
@@ -161,10 +162,10 @@ class RAGService:
         return transform_to_content(documents)
 
     async def add_to_vector_db(
-        self, documents: List[Document], collection_name: DocsCollection
+        self, doc_id: str, documents: List[Document], collection_name: DocsCollection
     ) -> List[Document]:
         vectordb_instance = QdrantDB(collection_name=collection_name)
-        await vectordb_instance.add_documents(documents)
+        await vectordb_instance.add_documents(doc_id, documents)
 
         return True
 
