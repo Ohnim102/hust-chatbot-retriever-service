@@ -1,16 +1,5 @@
 # Retriever service
 
-## Installation
-```python
-pip install -r requirements.txt 
-```
-
-Khởi tạo project
-```python
-python -m venv .venv
-.venv\Scripts\activate
-```
-
 
 ## 📋 Overview
 
@@ -18,12 +7,16 @@ API này cung cấp các chức năng cho hệ thống Retrieval-Augmented Gener
 - Upload tài liệu vào VectorDB
 - Truy vấn tài liệu
 - Sinh prompt cho LLM
+- Xóa tài liệu theo doc_id
 - Xoá tài liệu hoặc toàn bộ VectorDB
 
-Base URL
-```
-http://localhost:8000
-```
+Retriever service:
+- Base URL: `http://localhost:8081/api/`  
+- Swagger: `http://localhost:8081/docs`
+
+Qdrant DB: `http://localhost:6333/dashboard#/collections`  
+Chroma DB: `http://127.0.0.1:8000/docs/`
+
 
 ### Cấu trúc project:
 ```
@@ -40,6 +33,19 @@ retriever-chromadb/
 └─ docker-compose.yml
 ```
 
+## Installation
+Cài đặt thư viện
+```python
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt 
+```
+
+Ollama
+```sh
+ollama pull nomic-embed-text
+ollama pull deepseek-r1:8b
+```
 
 ## 🧩 API Endpoints
 
@@ -71,6 +77,9 @@ curl -X POST "http://api.example.com/api/rag/upload-for-rag" \
   -F "collection=rag_collection"
 ```
 
+**Example Response**:
+  `"./temp_uploads\\Hà Nội.pdf"`
+
 ---
 
 ### 2. Delete Document by ID
@@ -97,6 +106,13 @@ Xóa tài liệu khỏi vector database theo doc_id.
 curl -X DELETE "http://api.example.com/api/rag/delete-document-by-doc-id?doc_id=doc123&collection=rag_collection"
 ```
 
+**Example Response**:
+```json
+{
+  "success": true,
+  "doc_id": "987654321"
+}
+```
 ---
 
 ### 3. Query Document
@@ -122,6 +138,34 @@ Tìm kiếm tài liệu trong vector database.
 **Example cURL**:
 ```bash
 curl -X GET "http://api.example.com/api/rag/query?query=machine%20learning&k=5&collection=rag_collection"
+```
+
+**Example Response**:
+```json
+[
+    {
+        "source": "./temp_uploads\\Vincom Landmark 81.docx",
+        "metadata": {
+            "source": "./temp_uploads\\Vincom Landmark 81.docx",
+            "total_pages": 0,
+            "creationdate": "",
+            "title": "Untitled",
+            "author": "Unknown Author"
+        },
+        "matches": [
+            {
+                "page_content": "Riêng tầng 21. 46H và 78 là tầng kĩ thuật.",
+                "score": 0.75985098,
+                "page": 0
+            },
+            {
+                "page_content": "Tên file: Vincom Landmark 81.docx",
+                "score": 0.674089315,
+                "page": 0
+            }
+        ]
+    }
+]
 ```
 
 ---
@@ -272,3 +316,8 @@ Kiểm tra trạng thái hoạt động của API.
 ```bash
 curl -X GET "http://api.example.com/api/health"
 ```
+
+
+## Tham khảo
+- [Tesseract ](https://github.com/UB-Mannheim/tesseract/wiki)
+- [ChatGPT](https://chatgpt.com/c/69037dcc-49b0-8324-884c-23cfc09c95b6)

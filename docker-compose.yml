@@ -1,21 +1,20 @@
 services:      
-  # PostgreSQL Database
-  postgres:
-    image: postgres:latest
-    container_name: postgres
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  retriever:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: retriever-service
+    # restart: unless-stopped
+    depends_on:
+      - ollama
+      - qdrant
     ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - "8082:8000"
+    environment:
+      # Nếu muốn override file settings hoặc dùng env thay thế
+      - APP_SETTINGS_FILE=/app/appsettings.json
+    volumes:
+      - ./appsettings.json:/app/appsettings.json:ro
     networks:
       - hust-network
 
@@ -29,19 +28,6 @@ services:
       - "11434:11434"
     networks:
       - hust-network
-
-  # Chroma Database
-  chromadb:
-    image: chromadb/chroma:1.0.14.dev78
-    container_name: chromadb
-    volumes:
-      - ./chromadb:/chroma/chroma
-    environment:
-      - IS_PERSISTENT=TRUE
-      - PERSIST_DIRECTORY=/chroma/chroma # this is the default path, change it as needed
-      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-TRUE}
-    ports:
-      - 8000:8000
       
   # Qdrant Database
   qdrant:
@@ -55,6 +41,19 @@ services:
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
       QDRANT__STORAGE__URI: /qdrant/storage
+
+  # # Chroma Database
+  # chromadb:
+  #   image: chromadb/chroma:1.0.14.dev78
+  #   container_name: chromadb
+  #   volumes:
+  #     - ./chromadb:/chroma/chroma
+  #   environment:
+  #     - IS_PERSISTENT=TRUE
+  #     - PERSIST_DIRECTORY=/chroma/chroma # this is the default path, change it as needed
+  #     - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-TRUE}
+  #   ports:
+  #     - 8000:8000
 
 networks:
   hust-network:

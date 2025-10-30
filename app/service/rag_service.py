@@ -8,6 +8,17 @@ from langchain_community.document_loaders import (
     UnstructuredHTMLLoader,
     UnstructuredExcelLoader,
 )
+# from pdf2image import convert_from_path
+
+import fitz  # PyMuPDF
+from PIL import Image
+import pytesseract
+import io
+from pdfminer.high_level import extract_text
+
+# from docling.parsers import PdfParser, WordParser, HtmlParser, ExcelParser
+# from docling.document_converter import DocumentConverter
+
 from langchain_text_splitters import (
     CharacterTextSplitter,
     RecursiveCharacterTextSplitter,
@@ -103,7 +114,31 @@ class RAGService:
         documents.insert(0, file_doc)
 
         return documents
+    
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
+    @staticmethod
+    def pdf_to_text_ocr_fitz(file_path: str, lang: str = "vie") -> str:
+        """
+        Đọc file PDF scan (image-based) bằng PyMuPDF và Tesseract OCR.
+        Không cần Poppler.
+        """
+        text_result = ""
+        doc = fitz.open(file_path)
+        print(f"🔍 Found {doc.page_count} pages in {file_path}")
+
+        for page_index in range(doc.page_count):
+            page = doc.load_page(page_index)
+            pix = page.get_pixmap(dpi=300)  # render với độ phân giải cao
+            mode = "RGBA" if pix.alpha else "RGB"
+            img = Image.frombytes(mode, [pix.width, pix.height], pix.samples)
+
+            # OCR
+            text = pytesseract.image_to_string(img, lang=lang)
+            text_result += f"\n=== Page {page_index + 1} ===\n{text}\n"
+
+        return text_result
+    
     # Load and split document
     async def load_and_split_document(
         self,
@@ -116,20 +151,59 @@ class RAGService:
         },
     ) -> str:
         # TODO: Handle file pdf with UnstructuredPDFLoader
-        documents = None
-        if file_path.endswith(".pdf"):
-            loader = PyPDFLoader(file_path)
-        elif file_path.endswith(".docx"):
-            loader = Docx2txtLoader(file_path)
-        elif file_path.endswith(".xlsx"):
-            loader = UnstructuredExcelLoader(file_path)
-        elif file_path.endswith(".html"):
-            loader = UnstructuredHTMLLoader(file_path)
-        else:
-            raise ValueError(f"Unsupported file type: {file_path}")
+        ext = os.path.splitext(file_path)[1].lower()
+        documents: List[Document] = []
 
-        documents = loader.load()
-        metadata = documents[0].metadata
+        ## --- Using Langchain loaders ---
+        # if file_path.endswith(".pdf"):
+        #     loader = PyPDFLoader(file_path)
+        # elif file_path.endswith(".docx"):
+        #     loader = Docx2txtLoader(file_path)
+        # elif file_path.endswith(".xlsx"):
+        #     loader = UnstructuredExcelLoader(file_path)
+        # elif file_path.endswith(".html"):
+        #     loader = UnstructuredHTMLLoader(file_path)
+        # else:
+        #     raise ValueError(f"Unsupported file type: {file_path}")
+        # documents = loader.load()
+
+        ## --- Using Docling library (not maintained) ---
+        # converter = DocumentConverter()
+        # result = converter.convert(file_path)
+        # text = result.document.export_to_text()
+        # documents = [Document(page_content=text, metadata={"source": file_path})]
+
+        ## --- Using UnstructuredPDFLoader with OCR fallback ---
+        if ext == ".pdf":
+            try:
+                text = extract_text(file_path)
+                if text and len(text.strip()) > 20:
+                    print("📄 PDF has text layer — using PyPDFLoader")
+                    loader = PyPDFLoader(file_path)
+                    documents = loader.load()
+                else:
+                    full_text = RAGService.pdf_to_text_ocr_fitz(file_path, lang="vie")
+                    full_text = self.pdf_to_text_ocr_fitz(file_path, lang="vie")
+                    documents = [Document(page_content=full_text, metadata={"source": file_path})]
+            except Exception as e:
+                print(f"⚠️ OCR fallback failed: {e}")
+                raise ValueError(f"OCR fallback failed: {file_path}")
+        elif ext == ".docx":
+            loader = Docx2txtLoader(file_path)
+            documents = loader.load()
+        elif ext in [".xlsx", ".xls"]:
+            loader = UnstructuredExcelLoader(file_path)
+            documents = loader.load()
+        elif ext in [".html", ".htm"]:
+            loader = UnstructuredHTMLLoader(file_path)
+            documents = loader.load()
+        elif ext == ".txt":
+            with open(file_path, "r", encoding="utf-8") as f:
+                text = f.read()
+                documents = [Document(page_content=text, metadata={"source": file_path})]
+        else:
+            raise ValueError(f"Unsupported file type: {file_path}")        
+
         for doc in documents:
             doc.page_content = self.clean_text(doc.page_content)
 
@@ -137,7 +211,7 @@ class RAGService:
         if documents:
             documents = self.split_documents(documents, options)
 
-        documents_add_page_name = self.add_file_name_to_start(metadata, documents)
+        documents_add_page_name = self.add_file_name_to_start(documents[0].metadata, documents)
         documents_cleaned = await self.clean_documents(documents_add_page_name)
         await self.add_to_vector_db(doc_id, documents_cleaned, collection_name)
 

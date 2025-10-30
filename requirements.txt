@@ -7,3 +7,10 @@ pypdf==5.8.0
 docx2txt==0.9
 langchain-qdrant
 qdrant-client
+python-multipart
+# docling
+pdfminer.six
+pdf2image
+pytesseract
+pillow
+pymupdf
