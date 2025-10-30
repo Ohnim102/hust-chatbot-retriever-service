@@ -1,0 +1,45 @@
+# Ignore Python cache and envs
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+
+# Ignore virtual environments
+venv/
+.venv/
+
+# Ignore git and CI/CD files
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+.cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Ignore frontend or dataset directories
+node_modules/
+*.ipynb
+data/
+datasets/
+tmp/
+logs/
+uploads/
+*.zip
+*.tar
+*.tar.gz
+
+# Ignore Docker-related temporary files
+Dockerfile
+docker-compose*.yml
+.env

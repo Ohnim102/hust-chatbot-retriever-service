@@ -17,6 +17,15 @@ Retriever service:
 Qdrant DB: `http://localhost:6333/dashboard#/collections`  
 Chroma DB: `http://127.0.0.1:8000/docs/`
 
+## 🚀 Deploy
+
+```sh
+# build image
+docker build -t retriever-service .
+
+# run
+docker compose up -d
+```
 
 ### Cấu trúc project:
 ```
@@ -41,11 +50,18 @@ python -m venv .venv
 pip install -r requirements.txt 
 ```
 
-Ollama
+Run Ollama và Qdrant
+```sh
+docker compose run ollama
+docker compose run qdrant
+```
+
+ssh vào container Ollama
 ```sh
 ollama pull nomic-embed-text
-ollama pull deepseek-r1:8b
+ollama pull deepseek-r1:8b  # Option
 ```
+
 
 ## 🧩 API Endpoints
 

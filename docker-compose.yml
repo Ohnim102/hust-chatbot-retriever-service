@@ -10,11 +10,11 @@ services:
       - qdrant
     ports:
       - "8082:8000"
-    environment:
-      # Nếu muốn override file settings hoặc dùng env thay thế
-      - APP_SETTINGS_FILE=/app/appsettings.json
-    volumes:
-      - ./appsettings.json:/app/appsettings.json:ro
+    # environment:
+    #   # Nếu muốn override file settings hoặc dùng env thay thế
+    #   - APP_SETTINGS_FILE=/app/appsettings.json
+    # volumes:
+    #   - ./appsettings.json:/app/appsettings.json:ro
     networks:
       - hust-network
 
