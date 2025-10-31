@@ -43,7 +43,7 @@ ENV PATH=/usr/local/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PORT=8000 \
-    HEALTHCHECK_PATH=/health
+    HEALTHCHECK_PATH=/api/health
 
 # Create non-root user
 RUN groupadd -g ${APP_UID} ${APP_USER} \

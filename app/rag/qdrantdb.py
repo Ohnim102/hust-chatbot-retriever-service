@@ -22,8 +22,7 @@ async def check_qdrant_connection() -> bool:
             else:
                 return False
     except httpx.RequestError as e:
-        print(f"Lỗi kết nối tới Qdrant: {e}")
-        
+        print(f"Lỗi kết nối tới Qdrant: {e}")        
         return False
         
 class QdrantDB:
