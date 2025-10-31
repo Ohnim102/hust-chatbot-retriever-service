@@ -25,6 +25,11 @@ docker build -t retriever-service .
 
 # run
 docker compose up -d
+
+# pull ollama model
+docker exec ollama ollama pull nomic-embed-text
+
+# docker exec ollama ollama pull deepseek-r1:8b
 ```
 
 ### Cấu trúc project:
