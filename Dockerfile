@@ -22,6 +22,9 @@ RUN apt-get update \
         ca-certificates \
         curl \
         git \
+        libmagic1 \
+        poppler-utils \
+        tesseract-ocr \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
@@ -49,7 +52,13 @@ ENV PATH=/usr/local/bin:$PATH \
 RUN groupadd -g ${APP_UID} ${APP_USER} \
  && useradd -m -u ${APP_UID} -g ${APP_USER} ${APP_USER} \
  && apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl \
+ && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        libmagic1 \
+        poppler-utils \
+        tesseract-ocr \
+        tesseract-ocr-vie \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

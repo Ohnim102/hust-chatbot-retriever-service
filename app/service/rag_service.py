@@ -32,6 +32,7 @@ from app.transformers.rag_file_transformer import transform_documents
 from app.transformers.rag_content_transformer import transform_to_content
 from app.setting.enum import DocsCollection
 from app.models.prompt import OllamaPrompt, OllamaMessage
+import platform
 
 
 class RAGService:
@@ -115,7 +116,12 @@ class RAGService:
 
         return documents
     
-    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+    if platform.system() == "Windows":
+        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    else:
+        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
     @staticmethod
     def pdf_to_text_ocr_fitz(file_path: str, lang: str = "vie") -> str:

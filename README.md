@@ -67,6 +67,13 @@ ollama pull nomic-embed-text
 ollama pull deepseek-r1:8b  # Option
 ```
 
+## Check 
+
+Other
+```
+tesseract --list-langs
+```
+
 
 ## 🧩 API Endpoints
 

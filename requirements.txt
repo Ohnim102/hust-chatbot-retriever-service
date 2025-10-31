@@ -8,6 +8,11 @@ docx2txt==0.9
 langchain-qdrant
 qdrant-client
 python-multipart
+unstructured[excel]
+msoffcrypto-tool
+networkx
+pandas
+openpyxl
 # docling
 pdfminer.six
 pdf2image
