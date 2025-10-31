@@ -10,8 +10,22 @@ from app.setting.config import get_settings
 from uuid import uuid4
 from app.setting.enum import DocsCollection
 from qdrant_client.http.models import Filter, FieldCondition, MatchValue
+import httpx
 
 
+async def check_qdrant_connection() -> bool:
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(get_settings().qdrant_url)
+            if response.status_code == 200:
+                return True
+            else:
+                return False
+    except httpx.RequestError as e:
+        print(f"Lỗi kết nối tới Qdrant: {e}")
+        
+        return False
+        
 class QdrantDB:
     def __init__(
         self,

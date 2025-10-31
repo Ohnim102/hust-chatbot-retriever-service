@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.rag.ollama import check_ollama_connection
+from app.rag.qdrantdb import check_qdrant_connection
 from app.routers.rag import router as rag_router
 from app.routers.ollama import router as ollama_router
 from app.setting.config import get_settings
@@ -14,9 +15,11 @@ app.include_router(ollama_router, prefix="/api")
 @app.get("/api/health")
 async def health():
     ollama_connect = await check_ollama_connection()
+    qdrant_connect = await check_qdrant_connection()
     get_settings.cache_clear()
     return {
         "ollama_connection": ollama_connect,
+        "qdrant_connection": qdrant_connect,
         "server_status": "Running",
         "configs": get_settings()
     }

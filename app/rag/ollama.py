@@ -3,6 +3,7 @@ from app.setting.config import get_settings
 
 async def check_ollama_connection() -> bool:
     try:
+        print('setting', get_settings())
         async with httpx.AsyncClient() as client:
             response = await client.get(get_settings().ollama_url)
             if response.status_code == 200:

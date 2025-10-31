@@ -63,6 +63,8 @@ COPY --chown=${APP_USER}:${APP_USER} . /app
 
 # Expose default port
 EXPOSE ${PORT}
+EXPOSE 11434
+EXPOSE 6333
 
 # Minimal healthcheck (adjust path/port if needed)
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD curl -f http://127.0.0.1:${PORT}${HEALTHCHECK_PATH} || exit 1
