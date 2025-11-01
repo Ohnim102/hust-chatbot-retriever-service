@@ -43,3 +43,7 @@ uploads/
 Dockerfile
 docker-compose*.yml
 .env
+
+.vscode/
+qdrantdb/
+temp_uploads/
